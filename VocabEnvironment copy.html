@@ -1,0 +1,1549 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>คลังแฟลชการ์ดคำศัพท์สิ่งแวดล้อม 100 คำ (A2-B2)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Sarabun -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        font-family: "Inter", "Sarabun", sans-serif;
+        background-color: #f0fdf4; /* Light green/minty background */
+      }
+      /* Custom slide and pop animations for flashcards */
+      .card-container {
+        position: relative;
+        overflow: hidden;
+      }
+      .flashcard-anim {
+        transition:
+          transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+          opacity 0.3s ease;
+      }
+      .slide-out-left {
+        transform: translateX(-120%) rotate(-5deg);
+        opacity: 0;
+      }
+      .slide-out-right {
+        transform: translateX(120%) rotate(5deg);
+        opacity: 0;
+      }
+      .slide-in-right {
+        animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      .slide-in-left {
+        animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+
+      @keyframes slideInRight {
+        0% {
+          transform: translateX(100%) rotate(5deg);
+          opacity: 0;
+        }
+        100% {
+          transform: translateX(0) rotate(0deg);
+          opacity: 1;
+        }
+      }
+      @keyframes slideInLeft {
+        0% {
+          transform: translateX(-100%) rotate(-5deg);
+          opacity: 0;
+        }
+        100% {
+          transform: translateX(0) rotate(0deg);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-slate-800 pb-16 flex flex-col justify-between">
+    <!-- Header Section -->
+    <header
+      class="bg-gradient-to-r from-emerald-600 to-green-600 text-white py-6 px-4 shadow-md relative overflow-hidden shrink-0"
+    >
+      <div
+        class="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0))]"
+      ></div>
+      <div
+        class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10"
+      >
+        <div class="text-center sm:text-left">
+          <span
+            class="bg-emerald-500/30 text-emerald-100 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase"
+            >Vocabulary Flashcards (A2-B2)</span
+          >
+          <h1 class="text-2xl md:text-3xl font-bold mt-1 tracking-tight">
+            Environmental Flashcards
+          </h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            onclick="toggleShuffle()"
+            id="shuffle-btn"
+            class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all border border-white/20"
+          >
+            <i data-lucide="shuffle" class="w-4 h-4"></i>
+            <span id="shuffle-status">เปิดสุ่มคำศัพท์</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Arena for single card viewing -->
+    <main
+      class="flex-1 max-w-4xl w-full mx-auto px-4 py-6 flex flex-col justify-center items-center gap-6"
+    >
+      <!-- Filter Selector & Set Indicator -->
+      <div
+        class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-green-100 shadow-sm"
+      >
+        <div class="flex p-1 bg-green-50 rounded-xl w-full sm:w-auto">
+          <button
+            onclick="changeSubset('all')"
+            id="sub-all"
+            class="flex-1 sm:flex-initial px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 bg-emerald-600 text-white shadow-sm"
+          >
+            ทั้งหมด (100)
+          </button>
+          <button
+            onclick="changeSubset('set1')"
+            id="sub-set1"
+            class="flex-1 sm:flex-initial px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-600 hover:text-emerald-600"
+          >
+            คำที่ 1-50 (มีประโยค)
+          </button>
+          <button
+            onclick="changeSubset('set2')"
+            id="sub-set2"
+            class="flex-1 sm:flex-initial px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 text-slate-600 hover:text-emerald-600"
+          >
+            คำที่ 51-100 (เน้นศัพท์)
+          </button>
+        </div>
+
+        <div
+          class="text-xs text-slate-500 font-semibold flex items-center gap-1.5"
+        >
+          <span
+            class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-100"
+            id="progress-indicator"
+          >
+            ความคืบหน้า: 1/100
+          </span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div
+        class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden shrink-0"
+      >
+        <div
+          id="progress-bar-fill"
+          class="bg-emerald-500 h-full transition-all duration-300"
+          style="width: 1%"
+        ></div>
+      </div>
+
+      <!-- Flashcard Showcase Box -->
+      <div
+        class="w-full card-container min-h-[380px] md:min-h-[420px] flex items-center justify-center relative"
+      >
+        <div
+          id="flashcard-body"
+          class="flashcard-anim w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-2 border-green-100 flex flex-col justify-between gap-4"
+        >
+          <!-- Card Header -->
+          <div
+            class="flex items-center justify-between border-b border-slate-100 pb-3"
+          >
+            <span
+              class="text-xs font-bold text-slate-400 tracking-widest uppercase flex items-center gap-1"
+            >
+              <i data-lucide="tag" class="w-3.5 h-3.5 text-emerald-500"></i>
+              คำศัพท์อันดับ <span id="card-id">#1</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span
+                id="card-type"
+                class="text-[10px] bg-green-50 text-emerald-700 font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border border-emerald-100"
+                >n.</span
+              >
+              <span
+                id="card-set"
+                class="text-[10px] bg-slate-100 text-slate-500 font-semibold px-2 py-1 rounded-md"
+                >ชุดคำศัพท์ 1-50</span
+              >
+            </div>
+          </div>
+
+          <!-- Main Vocabulary Content (Visible all together on one side) -->
+          <div class="flex-1 flex flex-col justify-center gap-4">
+            <!-- English Word & Audio Trigger -->
+            <div class="flex items-center gap-3">
+              <h2
+                id="card-word"
+                class="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-none lowercase"
+              >
+                acid rain
+              </h2>
+              <button
+                onclick="speakCurrentWord()"
+                class="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                title="ฟังเสียงอ่าน"
+              >
+                <i data-lucide="volume-2" class="w-6 h-6"></i>
+              </button>
+            </div>
+
+            <!-- Meaning -->
+            <div>
+              <span
+                class="text-[10px] uppercase font-bold text-emerald-600 block tracking-wider mb-0.5"
+                >คำแปลความหมาย</span
+              >
+              <p
+                id="card-meaning"
+                class="text-xl md:text-2xl font-bold text-slate-800 leading-snug"
+              >
+                ฝนกรด
+              </p>
+            </div>
+
+            <!-- Sentence & Translation Section (Conditional layout) -->
+            <div
+              id="card-sentence-container"
+              class="bg-emerald-50/50 border border-emerald-100/60 rounded-2xl p-4 flex flex-col gap-2"
+            >
+              <div>
+                <span
+                  class="text-[10px] uppercase font-bold text-emerald-700 block tracking-wider"
+                  >ประโยคภาษาอังกฤษตัวอย่าง (Example Sentence)</span
+                >
+                <p
+                  id="card-sentence"
+                  class="text-sm font-medium text-slate-700 italic mt-0.5 font-sans leading-relaxed"
+                >
+                  Industrial factories release sulfur dioxide into the
+                  atmosphere, which combines with water droplets to form acid
+                  rain that destroys forests.
+                </p>
+              </div>
+              <div class="border-t border-emerald-100/50 pt-2">
+                <span
+                  class="text-[10px] uppercase font-bold text-emerald-700 block tracking-wider"
+                  >แปลประโยคตัวอย่าง</span
+                >
+                <p
+                  id="card-translation"
+                  class="text-sm text-slate-600 font-medium leading-relaxed mt-0.5"
+                >
+                  โรงงานอุตสาหกรรมปล่อยซัลเฟอร์ไดออกไซด์สู่ชั้นบรรยากาศ
+                  ซึ่งรวมตัวกับละอองน้ำกลายเป็นฝนกรดที่ทำลายผืนป่า
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Bottom Instruction Hint -->
+          <div
+            class="text-center text-xs text-slate-400 mt-2 flex items-center justify-center gap-1"
+          >
+            <i
+              data-lucide="sparkles"
+              class="w-3.5 h-3.5 text-amber-500 animate-pulse"
+            ></i>
+            ใช้แป้นพิมพ์ลูกศร
+            <span class="bg-slate-100 px-1 rounded font-mono">←</span> หรือ
+            <span class="bg-slate-100 px-1 rounded font-mono">→</span>
+            หรือปัดหน้าจอเพื่อสลับใบ
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Console -->
+      <div class="w-full flex items-center justify-between gap-4 mt-2 shrink-0">
+        <button
+          onclick="prevCard()"
+          class="flex-1 sm:flex-initial bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-6 py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 border border-slate-200"
+        >
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          ย้อนกลับ
+        </button>
+        <button
+          onclick="nextCard()"
+          class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-10 py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+        >
+          ถัดไป
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Expandable Grid Panel for direct selection of cards -->
+      <div
+        class="w-full mt-4 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm shrink-0"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <h3
+            class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5"
+          >
+            <i data-lucide="grid" class="w-4 h-4 text-emerald-600"></i>
+            สารบัญดัชนี (คลิกเพื่อข้ามไปยังคำนั้นๆ)
+          </h3>
+        </div>
+        <!-- Jump index circles dynamically populated -->
+        <div
+          id="index-grid"
+          class="grid grid-cols-10 gap-1.5 max-h-32 overflow-y-auto pr-1"
+        >
+          <!-- Javascript will inject 1 to 100 buttons -->
+        </div>
+      </div>
+    </main>
+
+    <!-- JavaScript Logic & Data structures -->
+    <script>
+      // 100 Environmental Vocabulary words database - All words starting with lower case
+      const flashcardsData = [
+        // 1-50 with sentences and translations (Set 1)
+        {
+          id: 1,
+          word: "acid rain",
+          type: "n.",
+          meaning: "ฝนกรด",
+          set: 1,
+          sentence:
+            "Industrial factories release sulfur dioxide into the atmosphere, which combines with water droplets to form acid rain that destroys forests.",
+          translation:
+            "โรงงานอุตสาหกรรมปล่อยซัลเฟอร์ไดออกไซด์สู่ชั้นบรรยากาศ ซึ่งรวมตัวกับละอองน้ำกลายเป็นฝนกรดที่ทำลายผืนป่า",
+        },
+        {
+          id: 2,
+          word: "aerosol",
+          type: "n.",
+          meaning: "ละอองของเหลว",
+          set: 1,
+          sentence:
+            "Consumers are advised to avoid using aerosol sprays because they often contain chemicals that can damage the ozone layer.",
+          translation:
+            "ผู้บริโภคได้รับคำแนะนำให้หลีกเลี่ยงการใช้สเปรย์ละอองของเหลว เนื่องจากมักมีสารเคมีที่สามารถทำลายชั้นโอโซนได้",
+        },
+        {
+          id: 3,
+          word: "air pollution",
+          type: "n.",
+          meaning: "มลพิษทางอากาศ",
+          set: 1,
+          sentence:
+            "Heavy traffic in major cities is the primary cause of air pollution, leading to respiratory problems for millions of citizens.",
+          translation:
+            "การจราจรที่ติดขัดในเมืองใหญ่เป็นสาเหตุหลักของมลพิษทางอากาศ ซึ่งนำไปสู่ปัญหาทางเดินหายใจของประชาชนหลายล้านคน",
+        },
+        {
+          id: 4,
+          word: "water pollution",
+          type: "n.",
+          meaning: "มลภาวะทางน้ำ",
+          set: 1,
+          sentence:
+            "Dumping untreated chemical waste directly into the river causes severe water pollution and kills local fish populations.",
+          translation:
+            "การทิ้งขยะเคมีที่ยังไม่ผ่านการบำบัดลงในแม่น้ำโดยตรงทำให้เกิดมลภาวะทางน้ำอย่างรุนแรงและฆ่าประชากรปลาในท้องถิ่น",
+        },
+        {
+          id: 5,
+          word: "marine pollution",
+          type: "n.",
+          meaning: "มลภาวะทางทะเล",
+          set: 1,
+          sentence:
+            "Marine pollution has reached a critical level as plastic waste blocks coral reefs and threatens sea turtles.",
+          translation:
+            "มลภาวะทางทะเลได้เข้าสู่ระดับวิกฤตเนื่องจากขยะพลาสติกขัดขวางแนวปะการังและคุกคามเต่าทะเล",
+        },
+        {
+          id: 6,
+          word: "mercury poisoning",
+          type: "n.",
+          meaning: "การเป็นพิษของสารปรอท",
+          set: 1,
+          sentence:
+            "Factory workers who handle heavy metals without proper protection are at a high risk of developing mercury poisoning.",
+          translation:
+            "คนงานโรงงานที่สัมผัสโลหะหนักโดยไม่มีการป้องกันที่เหมาะสมมีความเสี่ยงสูงที่จะเกิดภาวะพิษจากสารปรอท",
+        },
+        {
+          id: 7,
+          word: "atmosphere",
+          type: "n.",
+          meaning: "ชั้นบรรยากาศ",
+          set: 1,
+          sentence:
+            "Greenhouse gases trap heat within the Earth's atmosphere, causing global temperatures to rise every year.",
+          translation:
+            "ก๊าซเรือนกระจกจะกักเก็บความร้อนไว้ในชั้นบรรยากาศของโลก ทำให้อุณหภูมิโลกสูงขึ้นในทุก ๆ ปี",
+        },
+        {
+          id: 8,
+          word: "climate",
+          type: "n.",
+          meaning: "ภูมิอากาศ",
+          set: 1,
+          sentence:
+            "Human activities have drastically altered the global climate, resulting in more frequent and intense weather events.",
+          translation:
+            "กิจกรรมของมนุษย์ได้เปลี่ยนแปลงภูมิอากาศโลกอย่างรุนแรง ส่งผลให้เกิดปรากฏการณ์สภาพอากาศที่บ่อยครั้งและรุนแรงขึ้น",
+        },
+        {
+          id: 9,
+          word: "contaminated",
+          type: "adj.",
+          meaning: "ปนเปื้อน",
+          set: 1,
+          sentence:
+            "The local government warned residents not to drink from the well because the water had been contaminated by agricultural chemicals.",
+          translation:
+            "รัฐบาลท้องถิ่นเตือนชาวบ้านไม่ให้ดื่มน้ำจากบ่อน้ำเนื่องจากน้ำได้รับการปนเปื้อนจากสารเคมีทางการเกษตร",
+        },
+        {
+          id: 10,
+          word: "devastating",
+          type: "adj.",
+          meaning: "ที่ทำลายล้าง",
+          set: 1,
+          sentence:
+            "The wildfire had a devastating effect on the ecosystem, destroying thousands of acres of wildlife habitat within days.",
+          translation:
+            "ไฟป่าส่งผลกระทบที่ทำลายล้างต่อระบบนิเวศ โดยทำลายถิ่นที่อยู่อาศัยของสัตว์ป่าหลายพันเอเคอร์ภายในไม่กี่วัน",
+        },
+        {
+          id: 11,
+          word: "dispose of",
+          type: "v.",
+          meaning: "กำจัด...ทิ้งไป",
+          set: 1,
+          sentence:
+            "Every community must learn how to safely dispose of hazardous household waste like used batteries and electronics.",
+          translation:
+            "ทุกชุมชนต้องเรียนรู้วิธีกำจัดขยะในครัวเรือนที่เป็นอันตรายอย่างปลอดภัย เช่น แบตเตอรี่ที่ใช้แล้วและอุปกรณ์อิเล็กทรอนิกส์",
+        },
+        {
+          id: 12,
+          word: "domestic sewage",
+          type: "n.",
+          meaning: "ของเสียจากอาคารบ้านเรือน",
+          set: 1,
+          sentence:
+            "Without a proper filtration system, domestic sewage can pollute nearby canals and produce an unpleasant smell.",
+          translation:
+            "หากไม่มีระบบกรองที่เหมาะสม ของเสียจากอาคารบ้านเรือนสามารถสร้างมลพิษให้กับลำคลองใกล้เคียงและส่งกลิ่นอันไม่พึงประสงค์ได้",
+        },
+        {
+          id: 13,
+          word: "ecology",
+          type: "n.",
+          meaning: "ระบบนิเวศ",
+          set: 1,
+          sentence:
+            "Students in the biology class are studying the ecology of wetlands to understand how different organisms interact with each other.",
+          translation:
+            "นักเรียนในวิชาชีววิทยากำลังศึกษาเกี่ยวกับระบบนิเวศของพื้นที่ชุ่มน้ำเพื่อทำความเข้าใจว่าสิ่งมีชีวิตต่าง ๆ มีปฏิสัมพันธ์ร่วมกันอย่างไร",
+        },
+        {
+          id: 14,
+          word: "effect",
+          type: "n.",
+          meaning: "ผลกระทบ",
+          set: 1,
+          sentence:
+            "Scientists are continuously researching the long-term effect of microplastics on human health and food chains.",
+          translation:
+            "นักวิทยาศาสตร์กำลังวิจัยอย่างต่อเนื่องเกี่ยวกับผลกระทบระยะยาวของไมโครพลาสติกต่อสุขภาพของมนุษย์และห่วงโซ่อาหาร",
+        },
+        {
+          id: 15,
+          word: "alternative energy",
+          type: "n.",
+          meaning: "พลังงานทางเลือก",
+          set: 1,
+          sentence:
+            "Investing in alternative energy, such as wind and solar power, is crucial for reducing our dependence on fossil fuels.",
+          translation:
+            "การลงทุนในพลังงานทางเลือก เช่น พลังงานลมและพลังงานแสงอาทิตย์ เป็นสิ่งสำคัญในการลดการพึ่งพาเชื้อเพลิงฟอสซิลของเรา",
+        },
+        {
+          id: 16,
+          word: "energy shortage",
+          type: "n.",
+          meaning: "ภาวะการขาดแคลนพลังงาน",
+          set: 1,
+          sentence:
+            "The sudden collapse of the main power plant caused a severe energy shortage that affected the entire industrial zone.",
+          translation:
+            "การพังทลายอย่างกะทันหันของโรงไฟฟ้าหลักทำให้เกิดภาวะขาดแคลนพลังงานอย่างรุนแรงซึ่งส่งผลกระทบต่อทั้งเขตอุตสาหกรรม",
+        },
+        {
+          id: 17,
+          word: "emission",
+          type: "n.",
+          meaning: "การปล่อยออกมา (ก๊าซ/ควัน)",
+          set: 1,
+          sentence:
+            "The new environmental policy aims to strictly regulate carbon emission from commercial vehicles.",
+          translation:
+            "นโยบายสิ่งแวดล้อมใหม่มีเป้าหมายเพื่อควบคุมการปล่อยคาร์บอนจากยานพาหนะเชิงพาณิชย์อย่างเข้มงวด",
+        },
+        {
+          id: 18,
+          word: "erosion",
+          type: "n.",
+          meaning: "การสึกลง, การกัดเซาะ",
+          set: 1,
+          sentence:
+            "Planting trees along the riverbank is an effective method to prevent soil erosion during the rainy season.",
+          translation:
+            "การปลูกต้นไม้ตามแนวชายฝั่งแม่น้ำเป็นวิธีที่มีประสิทธิภาพในการป้องกันการกัดเซาะของดินในช่วงฤดูฝน",
+        },
+        {
+          id: 19,
+          word: "erode",
+          type: "v.",
+          meaning: "กร่อน (ถูกกัดกร่อน)",
+          set: 1,
+          sentence:
+            "Strong ocean waves gradually erode the coastal cliffs, changing the landscape of the beach over decades.",
+          translation:
+            "คลื่นมหาสมุทรที่รุนแรงค่อย ๆ กัดกร่อนหน้าผาชายฝั่ง ซึ่งเปลี่ยนภูมิทัศน์ของชายหาดตลอดหลายทศวรรษ",
+        },
+        {
+          id: 20,
+          word: "corrode",
+          type: "v.",
+          meaning: "กัดกร่อน (โลหะ/สิ่งอื่น)",
+          set: 1,
+          sentence:
+            "Acidic chemicals in the rain can corrode metal structures, making bridges and buildings unsafe over time.",
+          translation:
+            "สารเคมีที่เป็นกรดในน้ำฝนสามารถกัดกร่อนโครงสร้างโลหะ ทำให้สะพานและอาคารต่าง ๆ ไม่ปลอดภัยเมื่อเวลาผ่านไป",
+        },
+        {
+          id: 21,
+          word: "endangered species",
+          type: "n.",
+          meaning: "สัตว์ใกล้สูญพันธุ์",
+          set: 1,
+          sentence:
+            "The government passed a strict law to protect endangered species from being hunted or traded in black markets.",
+          translation:
+            "รัฐบาลได้ผ่านกฎหมายที่เข้มงวดเพื่อปกป้องสัตว์ใกล้สูญพันธุ์จากการถูกล่าหรือซื้อขายในตลาดมืด",
+        },
+        {
+          id: 22,
+          word: "exhaust fume",
+          type: "n.",
+          meaning: "ควันจากท่อไอเสียยานพาหนะ",
+          set: 1,
+          sentence:
+            "Inhaling exhaust fume from old diesel trucks daily can significantly damage your respiratory health.",
+          translation:
+            "การสูดดมควันจากท่อไอเสียของรถบรรทุกดีเซลเก่าทุกวันสามารถทำลายสุขภาพทางเดินหายใจของคุณได้อย่างมาก",
+        },
+        {
+          id: 23,
+          word: "fuel",
+          type: "n.",
+          meaning: "เชื้อเพลิง",
+          set: 1,
+          sentence:
+            "Most public transport buses are being upgraded to run on clean fuel instead of traditional gasoline to protect the environment.",
+          translation:
+            "รถโดยสารขนส่งสาธารณะส่วนใหญ่กำลังได้รับการอัปเกรดให้วิ่งด้วยเชื้อเพลิงสะอาดแทนน้ำมันเบนซินแบบเดิมเพื่อปกป้องสิ่งแวดล้อม",
+        },
+        {
+          id: 24,
+          word: "global warming",
+          type: "n.",
+          meaning: "ภาวะโลกร้อน",
+          set: 1,
+          sentence:
+            "Global warming has caused glaciers to melt rapidly, leading to a dangerous rise in sea levels worldwide.",
+          translation:
+            "ภาวะโลกร้อนทำให้น้ำแข็งละลายอย่างรวดเร็ว ส่งผลให้ระดับน้ำทะเลทั่วโลกเพิ่มสูงขึ้นอย่างน่ากลัว",
+        },
+        {
+          id: 25,
+          word: "greenhouse effect",
+          type: "n.",
+          meaning: "ปรากฏการณ์เรือนกระจก",
+          set: 1,
+          sentence:
+            "The greenhouse effect is a natural process, but human industrial pollution has made it strong enough to heat up the planet.",
+          translation:
+            "ปรากฏการณ์เรือนกระจกเป็นกระบวนการตามธรรมชาติ แต่มลพิษทางอุตสาหกรรมของมนุษย์ทำให้มันรุนแรงพอที่จะทำให้โลกนี้ร้อนขึ้น",
+        },
+        {
+          id: 26,
+          word: "metals",
+          type: "n.",
+          meaning: "โลหะ / ท่อระบายน้ำ",
+          set: 1,
+          sentence:
+            "Heavy metals found in electronic waste can leak into the soil and pollute underground water systems.",
+          translation:
+            "โลหะหนักที่พบในขยะอิเล็กทรอนิกส์สามารถรั่วไหลลงสู่ดินและปนเปื้อนระบบน้ำใต้ดินได้",
+        },
+        {
+          id: 27,
+          word: "nuclear fallout",
+          type: "n.",
+          meaning: "ฝุ่นรังสีนิวเคลียร์",
+          set: 1,
+          sentence:
+            "After the atomic incident, a large cloud of nuclear fallout spread across neighboring countries, creating a health crisis.",
+          translation:
+            "หลังเกิดอุบัติเหตุนิวเคลียร์ กลุ่มหมอกฝุ่นรังสีนิวเคลียร์ขนาดใหญ่ได้แพร่กระจายไปยังประเทศเพื่อนบ้าน ก่อให้เกิดวิกฤตทางสุขภาพ",
+        },
+        {
+          id: 28,
+          word: "oil-slick",
+          type: "n.",
+          meaning: "คราบน้ำมันที่ลอยบนผิวน้ำ",
+          set: 1,
+          sentence:
+            "Volunteers spent weeks cleaning up the massive oil-slick that threatened birds and marine life near the harbor.",
+          translation:
+            "อาสาสมัครใช้เวลาหลายสัปดาห์ในการทำความสะอาดคราบน้ำมันขนาดใหญ่ที่คุกคามนกและสิ่งมีชีวิตทางทะเลใกล้ท่าเรือ",
+        },
+        {
+          id: 29,
+          word: "ozone layer",
+          type: "n.",
+          meaning: "บรรยากาศชั้นโอโซน",
+          set: 1,
+          sentence:
+            "The ozone layer acts as a natural shield, protecting humans and plants from dangerous ultraviolet radiation.",
+          translation:
+            "ชั้นโอโซนทำหน้าที่เป็นเกราะกำบังตามธรรมชาติ ช่วยปกป้องมนุษย์และพืชพรรณจากรังสีอัลตราไวโอเลตที่เป็นอันตราย",
+        },
+        {
+          id: 30,
+          word: "pest",
+          type: "n.",
+          meaning: "ศัตรูพืช",
+          set: 1,
+          sentence:
+            "Farmers use natural predators like ladybugs to control the pest population instead of relying on toxic chemicals.",
+          translation:
+            "เกษตรกรใช้สัตว์ล่าตามธรรมชาติ เช่น แมลงเต่าทอง เพื่อควบคุมประชากรศัตรูพืชแทนการพึ่งพาสารเคมีที่มีพิษ",
+        },
+        {
+          id: 31,
+          word: "pesticide",
+          type: "n.",
+          meaning: "ยาฆ่าแมลง / ยาปราบศัตรูพืช",
+          set: 1,
+          sentence:
+            "Excessive use of chemical pesticide can kill beneficial insects like bees and pollute the local ecosystem.",
+          translation:
+            "การใช้ยาฆ่าแมลงเคมีมากเกินไปสามารถฆ่าแมลงที่มีประโยชน์เช่นผึ้ง และสร้างมลพิษให้กับระบบนิเวศในท้องถิ่นได้",
+        },
+        {
+          id: 32,
+          word: "plant / factory",
+          type: "n.",
+          meaning: "โรงงาน / แหล่งผลิต",
+          set: 1,
+          sentence:
+            "The local chemical manufacturing plant was closed down after failing to clean its industrial waste safely.",
+          translation:
+            "โรงงานผลิตสารเคมีในท้องถิ่นถูกสั่งปิดตัวลงหลังจากล้มเหลวในการกำจัดขยะอุตสาหกรรมอย่างปลอดภัย",
+        },
+        {
+          id: 33,
+          word: "pollutant",
+          type: "n.",
+          meaning: "มวลสาร, สิ่งปนเปื้อนสกปรก",
+          set: 1,
+          sentence:
+            "Sulfur dioxide is a dangerous pollutant that contributes significantly to the formation of smog in urban areas.",
+          translation:
+            "ซัลเฟอร์ไดออกไซด์เป็นสารมลพิษที่เป็นอันตรายซึ่งมีส่วนสำคัญต่อการก่อตัวของหมอกควันในพื้นที่เมือง",
+        },
+        {
+          id: 34,
+          word: "recycle",
+          type: "v.",
+          meaning: "นำกลับมาใช้ใหม่ (ผ่านกระบวนการ)",
+          set: 1,
+          sentence:
+            "Residents are encouraged to separate their garbage so that factories can recycle glass and paper products efficiently.",
+          translation:
+            "ประชาชนได้รับการสนับสนุนให้แยกขยะเพื่อให้โรงงานสามารถรีไซเคิลผลิตภัณฑ์แก้วและกระดาษได้อย่างมีประสิทธิภาพ",
+        },
+        {
+          id: 35,
+          word: "rubbish / trash / garbage",
+          type: "n.",
+          meaning: "ขยะ",
+          set: 1,
+          sentence:
+            "Throwing rubbish into public parks not only ruins the scenery but also attracts disease-carrying pests.",
+          translation:
+            "การทิ้งขยะในสวนสาธารณะไม่เพียงแต่ทำลายทัศนียภาพเท่านั้น แต่ยังดึงดูดสัตว์พาหะนำโรคอีกด้วย",
+        },
+        {
+          id: 36,
+          word: "surface run-off",
+          type: "n.",
+          meaning: "การสูญเสียหน้าดิน / น้ำบ่าไหลบ่าหน้าดิน",
+          set: 1,
+          sentence:
+            "During heavy rainstorms, surface run-off carries agricultural fertilizers from fields directly into local rivers.",
+          translation:
+            "ระหว่างพายุฝนตกหนัก น้ำบ่าหน้าดินจะพัดพาปุ๋ยเคมีทางการเกษตรจากทุ่งนาลงสู่แม่น้ำในท้องถิ่นโดยตรง",
+        },
+        {
+          id: 37,
+          word: "underground flow",
+          type: "n.",
+          meaning: "ทางน้ำใต้ดิน",
+          set: 1,
+          sentence:
+            "Scientists track the underground flow of water to identify if any pollutants from nearby landfills are leaking into it.",
+          translation:
+            "นักวิทยาศาสตร์ติดตามทางน้ำใต้ดินเพื่อระบุว่ามีสารมลพิษจากสถานที่ฝังกลบขยะใกล้เคียงรั่วไหลเข้าไปหรือไม่",
+        },
+        {
+          id: 38,
+          word: "waste",
+          type: "n.",
+          meaning: "กากของเสีย, ขยะเหลือทิ้ง",
+          set: 1,
+          sentence:
+            "Managing industrial waste properly is one of the biggest challenges for rapidly growing cities today.",
+          translation:
+            "การจัดการขยะอุตสาหกรรมอย่างเหมาะสมเป็นหนึ่งในความท้าทายที่ยิ่งใหญ่ที่สุดสำหรับเมืองที่เติบโตอย่างรวดเร็วในปัจจุบัน",
+        },
+        {
+          id: 39,
+          word: "biological diversity",
+          type: "n.",
+          meaning: "ความหลากหลายทางชีวภาพ",
+          set: 1,
+          sentence:
+            "Protecting a tropical forest helps preserve biological diversity, ensuring that unique plant and animal species do not disappear.",
+          translation:
+            "การปกป้องป่าเขตร้อนช่วยรักษาความหลากหลายทางชีวภาพ ทำให้มั่นใจได้ว่าพืชและสัตว์สายพันธุ์ที่เป็นเอกลักษณ์จะไม่สูญหายไป",
+        },
+        {
+          id: 40,
+          word: "ecosystem",
+          type: "n.",
+          meaning: "ระบบนิเวศ",
+          set: 1,
+          sentence:
+            "Every living organism plays a vital role in keeping the ecosystem balanced and healthy.",
+          translation:
+            "สิ่งมีชีวิตทุกชนิดมีบทบาทสำคัญในการทำให้ระบบนิเวศมีความสมดุลและสมบูรณ์แข็งแรง",
+        },
+        {
+          id: 41,
+          word: "parasite",
+          type: "n.",
+          meaning: "ปรสิต",
+          set: 1,
+          sentence:
+            "Certain types of water parasites can cause severe stomach illnesses if people consume untreated river water.",
+          translation:
+            "ปรสิตในน้ำบางชนิดสามารถก่อให้เกิดโรคกระเพาะอาหารรุนแรงได้หากผู้คนบริโภคน้ำในแม่น้ำที่ยังไม่ผ่านการบำบัด",
+        },
+        {
+          id: 42,
+          word: "extinct",
+          type: "adj.",
+          meaning: "สูญพันธุ์",
+          set: 1,
+          sentence:
+            "Dinosaurs became extinct millions of years ago, likely due to a massive asteroid impact that changed the climate.",
+          translation:
+            "ไดโนเสาร์สูญพันธุ์ไปหลายล้านปีแล้ว ซึ่งน่าจะเกิดจากการพุ่งชนของดาวเคราะห์น้อยขนาดใหญ่ที่เปลี่ยนแปลงสภาพภูมิอากาศ",
+        },
+        {
+          id: 43,
+          word: "extinction",
+          type: "n.",
+          meaning: "การสูญพันธุ์",
+          set: 1,
+          sentence:
+            "Habitat destruction is forcing many endangered birds to the brink of permanent extinction.",
+          translation:
+            "การทำลายถิ่นที่อยู่อาศัยกำลังผลักดันให้นกใกล้สูญพันธุ์หลายชนิดเข้าสู่ระบบการสูญพันธุ์อย่างถาวร",
+        },
+        {
+          id: 44,
+          word: "incinerate",
+          type: "v.",
+          meaning: "เผาขยะอย่างสมบูรณ์",
+          set: 1,
+          sentence:
+            "Hospitals usually incinerate medical waste at very high temperatures to destroy dangerous bacteria safely.",
+          translation:
+            "โรงพยาบาลมักจะเผาขยะทางการแพทย์ด้วยอุณหภูมิที่สูงมากเพื่อทำลายแบคทีเรียที่เป็นอันตรายอย่างปลอดภัย",
+        },
+        {
+          id: 45,
+          word: "overflow / flood",
+          type: "n. / v.",
+          meaning: "น้ำท่วม / เอ่อล้น",
+          set: 1,
+          sentence:
+            "Continuous rain caused the local river to overflow, creating a severe flood that displaced thousands of people.",
+          translation:
+            "ฝนที่ตกต่อเนื่องทำให้แม่น้ำในท้องถิ่นเอ่อล้น ก่อให้เกิดน้ำท่วมรุนแรงที่ทำให้ผู้คนหลายพันคนต้องย้ายที่อยู่อาศัย",
+        },
+        {
+          id: 46,
+          word: "tidal wave / tsunami",
+          type: "n.",
+          meaning: "คลื่นทะเลขนาดใหญ่, สึนามิ",
+          set: 1,
+          sentence:
+            "A powerful undersea earthquake triggered a devastating tidal wave that destroyed several coastal villages.",
+          translation:
+            "แผ่นดินไหวใต้ทะเลที่รุนแรงได้กระตุ้นให้เกิดคลื่นสึนามิที่ทำลายล้างหมู่บ้านชายฝั่งหลายแห่ง",
+        },
+        {
+          id: 47,
+          word: "toxic / noxious",
+          type: "adj.",
+          meaning: "ที่เป็นพิษ",
+          set: 1,
+          sentence:
+            "The smoke from burning plastic contains toxic gases that are harmful to both humans and animals.",
+          translation:
+            "ควันจากการเผาพลาสติกประกอบด้วยก๊าซพิษที่เป็นอันตรายต่อทั้งมนุษย์และสัตว์",
+        },
+        {
+          id: 48,
+          word: "toxin / venom / poison",
+          type: "n.",
+          meaning: "สารพิษ / พิษสัตว์ / ยาพิษ",
+          set: 1,
+          sentence:
+            "Some plants produce a natural toxin in their leaves to protect themselves from being eaten by insects.",
+          translation:
+            "พืชบางชนิดสร้างสารพิษตามธรรมชาติในใบเพื่อปกป้องตัวเองจากการถูกแมลงกัดกิน",
+        },
+        {
+          id: 49,
+          word: "herbicide",
+          type: "n.",
+          meaning: "ยาฆ่าวัชพืช",
+          set: 1,
+          sentence:
+            "Spraying herbicide near water resources can contaminate the drinking water and harm the local fish population.",
+          translation:
+            "การฉีดพ่นยาฆ่าวัชพืชใกล้แหล่งน้ำสามารถปนเปื้อนน้ำดื่มและเป็นอันตรายต่อประชากรปลาในท้องถิ่นได้",
+        },
+        {
+          id: 50,
+          word: "insecticide",
+          type: "n.",
+          meaning: "ยาฆ่าแมลง",
+          set: 1,
+          sentence:
+            "Organic farms prefer using natural oils to repel bugs rather than applying chemical insecticide on crops.",
+          translation:
+            "ฟาร์มเกษตรอินทรีย์เลือกที่จะใช้น้ำมันธรรมชาติในการไล่แมลงมากกว่าการใช้ยาฆ่าแมลงเคมีกับพืชผล",
+        },
+
+        // 51-100 words and meanings only (Set 2)
+        { id: 51, word: "volcano", type: "n.", meaning: "ภูเขาไฟ", set: 2 },
+        {
+          id: 52,
+          word: "volcanic ash",
+          type: "n.",
+          meaning: "ขี้เถ้าจากภูเขาไฟ",
+          set: 2,
+        },
+        {
+          id: 53,
+          word: "volcanic tremor",
+          type: "n.",
+          meaning: "การสั่นสะเทือนจากภูเขาไฟ",
+          set: 2,
+        },
+        {
+          id: 54,
+          word: "active volcano",
+          type: "n.",
+          meaning: "ภูเขาไฟที่ยังคงปะทุและมีพลัง",
+          set: 2,
+        },
+        {
+          id: 55,
+          word: "dormant volcano",
+          type: "n.",
+          meaning: "ภูเขาไฟที่สงบชั่วคราว (แต่พร้อมปะทุ)",
+          set: 2,
+        },
+        {
+          id: 56,
+          word: "extinct volcano",
+          type: "n.",
+          meaning: "ภูเขาไฟที่ดับมอดสนิท",
+          set: 2,
+        },
+        {
+          id: 57,
+          word: "wildlife sanctuary",
+          type: "n.",
+          meaning: "เขตรักษาพันธุ์สัตว์ป่า",
+          set: 2,
+        },
+        {
+          id: 58,
+          word: "animal welfare",
+          type: "n.",
+          meaning: "สวัสดิภาพสัตว์",
+          set: 2,
+        },
+        {
+          id: 59,
+          word: "biodegradable",
+          type: "adj.",
+          meaning: "ย่อยสลายได้ตามธรรมชาติ",
+          set: 2,
+        },
+        {
+          id: 60,
+          word: "conservation",
+          type: "n.",
+          meaning: "การอนุรักษ์สิ่งแวดล้อม",
+          set: 2,
+        },
+        {
+          id: 61,
+          word: "sustainability",
+          type: "n.",
+          meaning: "ความยั่งยืน",
+          set: 2,
+        },
+        {
+          id: 62,
+          word: "renewable energy",
+          type: "n.",
+          meaning: "พลังงานหมุนเวียน",
+          set: 2,
+        },
+        {
+          id: 63,
+          word: "carbon footprint",
+          type: "n.",
+          meaning: "ปริมาณคาร์บอนที่ปล่อยออกมา",
+          set: 2,
+        },
+        {
+          id: 64,
+          word: "deforestation",
+          type: "n.",
+          meaning: "การตัดไม้ทำลายป่า",
+          set: 2,
+        },
+        {
+          id: 65,
+          word: "drought",
+          type: "n.",
+          meaning: "ภัยแล้ง, ความแห้งแล้งสภาวะขาดน้ำ",
+          set: 2,
+        },
+        {
+          id: 66,
+          word: "habitat",
+          type: "n.",
+          meaning: "ถิ่นที่อยู่อาศัยตามธรรมชาติ",
+          set: 2,
+        },
+        {
+          id: 67,
+          word: "eco-friendly",
+          type: "adj.",
+          meaning: "เป็นมิตรต่อสิ่งแวดล้อม",
+          set: 2,
+        },
+        {
+          id: 68,
+          word: "landfill",
+          type: "n.",
+          meaning: "สถานที่ฝังกลบขยะ",
+          set: 2,
+        },
+        {
+          id: 69,
+          word: "preserve",
+          type: "v.",
+          meaning: "สงวน, คงสภาพรักษาไว้",
+          set: 2,
+        },
+        {
+          id: 70,
+          word: "endanger",
+          type: "v.",
+          meaning: "ทำให้เสี่ยงอันตราย/ใกล้สูญพันธุ์",
+          set: 2,
+        },
+        {
+          id: 71,
+          word: "deplete",
+          type: "v.",
+          meaning: "ทำให้หมดสิ้นไป, ค่อย ๆ ลดลงจนขาดแคลน",
+          set: 2,
+        },
+        {
+          id: 72,
+          word: "overpopulation",
+          type: "n.",
+          meaning: "ภาวะประชากรหนาแน่นล้นเมือง",
+          set: 2,
+        },
+        {
+          id: 73,
+          word: "organic farming",
+          type: "n.",
+          meaning: "เกษตรอินทรีย์ ปลอดสารเคมี",
+          set: 2,
+        },
+        {
+          id: 74,
+          word: "hazardous waste",
+          type: "n.",
+          meaning: "ขยะอันตราย, กากของเสียสารเคมี",
+          set: 2,
+        },
+        {
+          id: 75,
+          word: "catastrophe",
+          type: "n.",
+          meaning: "ภัยพิบัติหายนะรุนแรง",
+          set: 2,
+        },
+        {
+          id: 76,
+          word: "compensate",
+          type: "v.",
+          meaning: "ชดเชยค่าเสียหาย/ก๊าซคาร์บอน",
+          set: 2,
+        },
+        {
+          id: 77,
+          word: "crude oil",
+          type: "n.",
+          meaning: "น้ำมันดิบธรรมชาติ",
+          set: 2,
+        },
+        {
+          id: 78,
+          word: "famine",
+          type: "n.",
+          meaning: "ทุพภิกขภัย ความขาดแคลนอาหารรุนแรง",
+          set: 2,
+        },
+        {
+          id: 79,
+          word: "fertilizer",
+          type: "n.",
+          meaning: "ปุ๋ยบำรุงพืช",
+          set: 2,
+        },
+        {
+          id: 80,
+          word: "glacier",
+          type: "n.",
+          meaning: "ธารน้ำแข็งยักษ์",
+          set: 2,
+        },
+        {
+          id: 81,
+          word: "greenhouse gas",
+          type: "n.",
+          meaning: "ก๊าซเรือนกระจก",
+          set: 2,
+        },
+        {
+          id: 82,
+          word: "harsh weather",
+          type: "n.",
+          meaning: "สภาพอากาศรุนแรงเลวร้าย",
+          set: 2,
+        },
+        {
+          id: 83,
+          word: "logging",
+          type: "n.",
+          meaning: "ธุรกิจตัดไม้, อุตสาหกรรมทำไม้",
+          set: 2,
+        },
+        {
+          id: 84,
+          word: "poaching",
+          type: "n.",
+          meaning: "การล่าสัตว์ป่าอย่างผิดกฎหมาย",
+          set: 2,
+        },
+        {
+          id: 85,
+          word: "purify",
+          type: "v.",
+          meaning: "ทำให้บริสุทธิ์สะอาด",
+          set: 2,
+        },
+        {
+          id: 86,
+          word: "radiation",
+          type: "n.",
+          meaning: "รังสี, การแผ่พลังงานรังสี",
+          set: 2,
+        },
+        {
+          id: 87,
+          word: "rainforest",
+          type: "n.",
+          meaning: "ป่าดิบชื้นป่าดงดิบ",
+          set: 2,
+        },
+        {
+          id: 88,
+          word: "water scarcity",
+          type: "n.",
+          meaning: "วิกฤตการณ์ขาดแคลนน้ำ",
+          set: 2,
+        },
+        {
+          id: 89,
+          word: "smog",
+          type: "n.",
+          meaning: "หมอกควันพิษผสมมลพิษในอากาศ",
+          set: 2,
+        },
+        {
+          id: 90,
+          word: "solar panel",
+          type: "n.",
+          meaning: "แผงโซลาร์เซลล์รับแสงอาทิตย์",
+          set: 2,
+        },
+        {
+          id: 91,
+          word: "toxic waste",
+          type: "n.",
+          meaning: "ขยะสารพิษ",
+          set: 2,
+        },
+        {
+          id: 92,
+          word: "wind turbine",
+          type: "n.",
+          meaning: "กังหันลมยักษ์ผลิตไฟฟ้า",
+          set: 2,
+        },
+        {
+          id: 93,
+          word: "urbanization",
+          type: "n.",
+          meaning: "การพัฒนาขยายเขตเมือง",
+          set: 2,
+        },
+        {
+          id: 94,
+          word: "vulnerable",
+          type: "adj.",
+          meaning: "เสี่ยงง่าย, บอบบางเปราะบาง",
+          set: 2,
+        },
+        {
+          id: 95,
+          word: "sustain",
+          type: "v.",
+          meaning: "บำรุงรักษาไว้ให้มั่นคงเจือจุน",
+          set: 2,
+        },
+        {
+          id: 96,
+          word: "reclaim",
+          type: "v.",
+          meaning: "กู้คืนสภาพที่ดิน/นำกลับมาใช้ประโยชน์",
+          set: 2,
+        },
+        {
+          id: 97,
+          word: "litter",
+          type: "v. / n.",
+          meaning: "ทิ้งขยะเรี่ยราด / เศษขยะ",
+          set: 2,
+        },
+        {
+          id: 98,
+          word: "ecosystem balance",
+          type: "n.",
+          meaning: "ความสมดุลกลมกลืนของระบบนิเวศ",
+          set: 2,
+        },
+        {
+          id: 99,
+          word: "climate crisis",
+          type: "n.",
+          meaning: "วิกฤตสภาพภูมิอากาศโลกแปรปรวน",
+          set: 2,
+        },
+        {
+          id: 100,
+          word: "wildfire",
+          type: "n.",
+          meaning: "ไฟป่ารุนแรง",
+          set: 2,
+        },
+      ];
+
+      // App State Management
+      let currentSubset = "all"; // 'all' | 'set1' | 'set2'
+      let isShuffled = false;
+      let activeSubsetData = [...flashcardsData];
+      let orderedIndices = []; // Maps relative positions to data objects
+      let currentRelativeIndex = 0; // The active viewing position (0 to subsetData.length - 1)
+
+      // For Swipe Controls
+      let touchStartX = 0;
+      let touchEndX = 0;
+
+      // Initialize state mapping
+      window.addEventListener("DOMContentLoaded", () => {
+        setupSubset();
+        renderIndexGrid();
+        renderActiveCard("none");
+        setupKeyboardAndSwipeListeners();
+        lucide.createIcons();
+      });
+
+      // Configure Subset based on tabs selection
+      function setupSubset() {
+        if (currentSubset === "all") {
+          activeSubsetData = [...flashcardsData];
+        } else if (currentSubset === "set1") {
+          activeSubsetData = flashcardsData.filter((item) => item.set === 1);
+        } else if (currentSubset === "set2") {
+          activeSubsetData = flashcardsData.filter((item) => item.set === 2);
+        }
+
+        // Create ordered map
+        orderedIndices = Array.from(
+          { length: activeSubsetData.length },
+          (_, i) => i,
+        );
+
+        if (isShuffled) {
+          shuffleArray(orderedIndices);
+        }
+
+        currentRelativeIndex = 0;
+      }
+
+      // Handle tabs switcher
+      function changeSubset(subsetVal) {
+        currentSubset = subsetVal;
+
+        // Toggle Tab UI
+        ["all", "set1", "set2"].forEach((val) => {
+          const btn = document.getElementById(`sub-${val}`);
+          if (val === subsetVal) {
+            btn.classList.add("bg-emerald-600", "text-white", "shadow-sm");
+            btn.classList.remove("text-slate-600", "hover:text-emerald-600");
+          } else {
+            btn.classList.remove("bg-emerald-600", "text-white", "shadow-sm");
+            btn.classList.add("text-slate-600", "hover:text-emerald-600");
+          }
+        });
+
+        setupSubset();
+        renderIndexGrid();
+        renderActiveCard("none");
+      }
+
+      // Toggle Shuffle Mode
+      function toggleShuffle() {
+        isShuffled = !isShuffled;
+        const btn = document.getElementById("shuffle-btn");
+        const statusText = document.getElementById("shuffle-status");
+
+        if (isShuffled) {
+          btn.classList.add("bg-emerald-500", "border-emerald-400");
+          btn.classList.remove("bg-white/10");
+          statusText.innerText = "สุ่มคำศัพท์อยู่";
+          // Shuffle current index list
+          shuffleArray(orderedIndices);
+          currentRelativeIndex = 0;
+        } else {
+          btn.classList.remove("bg-emerald-500", "border-emerald-400");
+          btn.classList.add("bg-white/10");
+          statusText.innerText = "เปิดสุ่มคำศัพท์";
+          // Revert to order mapping
+          orderedIndices = Array.from(
+            { length: activeSubsetData.length },
+            (_, i) => i,
+          );
+          currentRelativeIndex = 0;
+        }
+
+        renderIndexGrid();
+        renderActiveCard("pop");
+      }
+
+      // Helper to shuffle list in-place
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      // Render Active card with dynamic slide transitions
+      function renderActiveCard(direction) {
+        const cardElement = document.getElementById("flashcard-body");
+        const dataIndex = orderedIndices[currentRelativeIndex];
+        const item = activeSubsetData[dataIndex];
+
+        if (!item) return;
+
+        // Apply exit transitions based on direction clicked
+        if (direction === "left") {
+          cardElement.classList.add("slide-out-left");
+        } else if (direction === "right") {
+          cardElement.classList.add("slide-out-right");
+        } else if (direction === "pop") {
+          cardElement.style.opacity = "0";
+          cardElement.style.transform = "scale(0.95)";
+        }
+
+        // Short timer to swap values while visual state is invisible/faded
+        setTimeout(
+          () => {
+            // Populate Texts
+            document.getElementById("card-id").innerText = `#${item.id}`;
+            document.getElementById("card-word").innerText = item.word;
+            document.getElementById("card-type").innerText = item.type;
+            document.getElementById("card-meaning").innerText = item.meaning;
+
+            // Configure Set Indicator Badge
+            const setBadge = document.getElementById("card-set");
+            if (item.set === 1) {
+              setBadge.innerText = "มีประโยคตัวอย่าง (1-50)";
+              setBadge.className =
+                "text-[10px] bg-sky-50 text-sky-700 font-semibold px-2.5 py-1 rounded-md border border-sky-100";
+            } else {
+              setBadge.innerText = "เน้นคำศัพท์ (51-100)";
+              setBadge.className =
+                "text-[10px] bg-teal-50 text-teal-700 font-semibold px-2.5 py-1 rounded-md border border-teal-100";
+            }
+
+            // Handle Example Sentences Display Condition
+            const sentenceContainer = document.getElementById(
+              "card-sentence-container",
+            );
+            if (item.set === 1) {
+              sentenceContainer.classList.remove("hidden");
+              document.getElementById("card-sentence").innerText =
+                item.sentence;
+              document.getElementById("card-translation").innerText =
+                item.translation;
+            } else {
+              sentenceContainer.classList.add("hidden");
+            }
+
+            // Update Progress metrics
+            const totalCount = activeSubsetData.length;
+            const naturalIdx = currentRelativeIndex + 1;
+            document.getElementById("progress-indicator").innerText =
+              `คำที่ ${naturalIdx} จาก ${totalCount}`;
+
+            // Update Progress bar percentage
+            const percentage = (naturalIdx / totalCount) * 100;
+            document.getElementById("progress-bar-fill").style.width =
+              `${percentage}%`;
+
+            // Set focus highlights in index grids
+            highlightIndexButton(item.id);
+
+            // Re-apply Entrance visual styles
+            cardElement.className =
+              "flashcard-anim w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-2 border-green-100 flex flex-col justify-between gap-4";
+            if (direction === "left") {
+              cardElement.classList.add("slide-in-right");
+            } else if (direction === "right") {
+              cardElement.classList.add("slide-in-left");
+            } else {
+              cardElement.style.opacity = "1";
+              cardElement.style.transform = "scale(1)";
+            }
+
+            // clean animations on end
+            setTimeout(() => {
+              cardElement.classList.remove("slide-in-right", "slide-in-left");
+            }, 400);
+          },
+          direction === "none" ? 0 : 200,
+        );
+      }
+
+      // Render 1-100 catalog indicators at the bottom
+      function renderIndexGrid() {
+        const grid = document.getElementById("index-grid");
+        grid.innerHTML = "";
+
+        // We generate indicators for all items currently in our selected subset
+        activeSubsetData.forEach((item, index) => {
+          const btn = document.createElement("button");
+          btn.id = `idx-btn-${item.id}`;
+          btn.className =
+            "h-8 text-xs font-bold rounded-lg border flex items-center justify-center transition-all focus:outline-none";
+          btn.innerText = item.id;
+          btn.setAttribute("onclick", `jumpToRelativeIndex(${index})`);
+
+          // Give static look depending on index placement
+          btn.className +=
+            " bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100";
+
+          grid.appendChild(btn);
+        });
+      }
+
+      // Highlight selected catalog index
+      function highlightIndexButton(activeId) {
+        // Revert all styles to normal
+        activeSubsetData.forEach((item) => {
+          const el = document.getElementById(`idx-btn-${item.id}`);
+          if (el) {
+            el.className =
+              "h-8 text-xs font-bold rounded-lg border flex items-center justify-center transition-all bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100";
+          }
+        });
+
+        // Set active highlighted look
+        const target = document.getElementById(`idx-btn-${activeId}`);
+        if (target) {
+          target.className =
+            "h-8 text-xs font-bold rounded-lg border flex items-center justify-center transition-all bg-emerald-600 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-200";
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
+          });
+        }
+      }
+
+      // Jump instantly to selected relative position
+      function jumpToRelativeIndex(index) {
+        if (index < 0 || index >= activeSubsetData.length) return;
+        const currentMapped = orderedIndices[currentRelativeIndex];
+        const targetMapped = orderedIndices[index];
+        const direction = targetMapped > currentMapped ? "left" : "right";
+        currentRelativeIndex = index;
+        renderActiveCard(direction);
+      }
+
+      // Navigation Next
+      function nextCard() {
+        if (currentRelativeIndex < activeSubsetData.length - 1) {
+          currentRelativeIndex++;
+        } else {
+          // Loop back to start
+          currentRelativeIndex = 0;
+        }
+        renderActiveCard("left");
+      }
+
+      // Navigation Prev
+      function prevCard() {
+        if (currentRelativeIndex > 0) {
+          currentRelativeIndex--;
+        } else {
+          // Loop to end
+          currentRelativeIndex = activeSubsetData.length - 1;
+        }
+        renderActiveCard("right");
+      }
+
+      // Speech Pronunciation handler
+      function speakCurrentWord() {
+        const dataIndex = orderedIndices[currentRelativeIndex];
+        const item = activeSubsetData[dataIndex];
+        if (!item) return;
+
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel(); // kill existing playback
+          const utterance = new SpeechSynthesisUtterance(item.word);
+          utterance.lang = "en-US";
+          utterance.rate = 0.85; // Natural clear reading speed
+          window.speechSynthesis.speak(utterance);
+        } else {
+          console.log("Speech synthesis not supported in this client.");
+        }
+      }
+
+      // Bind Swipe Gestures and Keyboard Arrows for seamless navigation
+      function setupKeyboardAndSwipeListeners() {
+        // Keyboard Binding
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowRight") {
+            nextCard();
+          } else if (e.key === "ArrowLeft") {
+            prevCard();
+          } else if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            speakCurrentWord();
+          }
+        });
+
+        // Swipe Detection Logic
+        const cardWrapper = document.getElementById("flashcard-body");
+
+        cardWrapper.addEventListener(
+          "touchstart",
+          (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+          },
+          { passive: true },
+        );
+
+        cardWrapper.addEventListener(
+          "touchend",
+          (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipeGesture();
+          },
+          { passive: true },
+        );
+      }
+
+      // Evaluate Swipe Direction
+      function handleSwipeGesture() {
+        const swipeThreshold = 50; // pixels minimum to count as a swipe
+        if (touchStartX - touchEndX > swipeThreshold) {
+          // Swiped Left -> go Next
+          nextCard();
+        } else if (touchEndX - touchStartX > swipeThreshold) {
+          // Swiped Right -> go Previous
+          prevCard();
+        }
+      }
+    </script>
+  </body>
+</html>
